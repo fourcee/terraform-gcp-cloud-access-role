@@ -72,7 +72,7 @@ resource "google_organization_iam_custom_role" "custom_role" {
 
 # Assign predefined roles at project level
 resource "google_project_iam_member" "predefined_role" {
-  for_each = local.is_project_level ? { for idx, binding in local.project_predefined_bindings : "${binding.role}-${binding.principal}" => binding } : {}
+  for_each = local.is_project_level ? { for binding in local.project_predefined_bindings : "${binding.role}-${binding.principal}" => binding } : {}
 
   project = var.project_id
   role    = each.value.role
@@ -81,7 +81,7 @@ resource "google_project_iam_member" "predefined_role" {
 
 # Assign custom roles at project level
 resource "google_project_iam_member" "custom_role" {
-  for_each = local.is_project_level ? { for idx, binding in local.project_custom_bindings : "${binding.role}-${binding.principal}" => binding } : {}
+  for_each = local.is_project_level ? { for binding in local.project_custom_bindings : "${binding.role}-${binding.principal}" => binding } : {}
 
   project = var.project_id
   role    = each.value.role
@@ -92,7 +92,7 @@ resource "google_project_iam_member" "custom_role" {
 
 # Assign predefined roles at folder level
 resource "google_folder_iam_member" "predefined_role" {
-  for_each = local.is_folder_level ? { for idx, binding in local.folder_predefined_bindings : "${binding.role}-${binding.principal}" => binding } : {}
+  for_each = local.is_folder_level ? { for binding in local.folder_predefined_bindings : "${binding.role}-${binding.principal}" => binding } : {}
 
   folder = var.folder_id
   role   = each.value.role
@@ -101,7 +101,7 @@ resource "google_folder_iam_member" "predefined_role" {
 
 # Assign custom roles at folder level
 resource "google_folder_iam_member" "custom_role" {
-  for_each = local.is_folder_level ? { for idx, binding in local.folder_custom_bindings : "${binding.role}-${binding.principal}" => binding } : {}
+  for_each = local.is_folder_level ? { for binding in local.folder_custom_bindings : "${binding.role}-${binding.principal}" => binding } : {}
 
   folder = var.folder_id
   role   = each.value.role

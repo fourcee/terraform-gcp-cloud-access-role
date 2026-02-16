@@ -96,11 +96,16 @@ module "folder_iam_assignment" {
 }
 
 # Example 4: Multiple principals with different roles
+# NOTE: This example demonstrates the Cartesian product behavior where ALL principals
+# receive ALL roles. In this case, all three groups will receive viewer, editor, and owner roles.
+# For production use, consider creating separate module calls for different access levels.
 module "multi_principal_iam" {
   source = "github.com/fourcee/terraform-gcp-cloud-access-role"
 
   project_id = "my-gcp-project-123"
 
+  # WARNING: roles/owner grants full administrative access. Use sparingly and only for trusted admins.
+  # Consider using more restricted roles like roles/editor or custom roles with specific permissions.
   predefined_roles = [
     "roles/viewer",
     "roles/editor",
@@ -110,6 +115,52 @@ module "multi_principal_iam" {
   group_principals = [
     "group:viewers@example.com",
     "group:editors@example.com",
+    "group:admins@example.com"
+  ]
+}
+
+# Example 5: Different roles for different groups (recommended approach)
+# Create separate module calls to assign different roles to different groups
+module "viewer_access" {
+  source = "github.com/fourcee/terraform-gcp-cloud-access-role"
+
+  project_id = "my-gcp-project-123"
+
+  predefined_roles = ["roles/viewer"]
+
+  group_principals = [
+    "group:viewers@example.com"
+  ]
+}
+
+module "editor_access" {
+  source = "github.com/fourcee/terraform-gcp-cloud-access-role"
+
+  project_id = "my-gcp-project-123"
+
+  predefined_roles = [
+    "roles/viewer",
+    "roles/editor"
+  ]
+
+  group_principals = [
+    "group:editors@example.com"
+  ]
+}
+
+module "admin_access" {
+  source = "github.com/fourcee/terraform-gcp-cloud-access-role"
+
+  project_id = "my-gcp-project-123"
+
+  # WARNING: roles/owner grants full administrative access. Use sparingly.
+  predefined_roles = [
+    "roles/viewer",
+    "roles/editor",
+    "roles/owner"
+  ]
+
+  group_principals = [
     "group:admins@example.com"
   ]
 }

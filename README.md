@@ -11,6 +11,8 @@ A Terraform module for deploying GCP IAM role assignments. This module allows yo
 
 ## Usage
 
+See the [examples directory](./examples) for complete usage examples.
+
 ### Project-Level IAM Assignment
 
 ```hcl

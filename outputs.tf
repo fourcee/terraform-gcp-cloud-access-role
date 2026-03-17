@@ -29,7 +29,7 @@ output "assigned_principals" {
   value       = var.group_principals
 }
 
-output "jit_reference_id" {
-  description = "The created PAM entitlement ID when jit_enabled is true"
-  value       = try(google_privileged_access_manager_entitlement.jit[0].id, null)
+output "pam_entitlement_name" {
+  description = "The created PAM entitlement Name when jit_enabled is true"
+  value       = try(google_privileged_access_manager_entitlement.jit[0].name, null)
 }

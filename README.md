@@ -1,6 +1,6 @@
 # terraform-gcp-cloud-access-role
 
-A Terraform module for deploying GCP IAM role assignments. This module allows you to create custom IAM roles and assign both predefined and custom roles to group principals at either the project or folder level.
+A Terraform module for deploying GCP IAM role assignments. This module allows you to create custom IAM roles and assign both predefined and custom roles to group principals at either the project or folder level, and optionally create PAM JIT entitlements instead of direct IAM assignments.
 
 ## Features
 
@@ -8,6 +8,7 @@ A Terraform module for deploying GCP IAM role assignments. This module allows yo
 - Assign predefined GCP roles to group principals
 - Assign custom roles to group principals
 - Support for both project-level and folder-level IAM assignments
+- Optional JIT PAM entitlements using `google_privileged_access_manager_entitlement`
 
 ## Usage
 
@@ -102,6 +103,10 @@ module "iam_assignment" {
 | project_id | The GCP project ID to assign permissions at. Must provide either project_id or folder_id. | `string` | `null` | no |
 | folder_id | The GCP folder ID to assign permissions at. Must provide either project_id or folder_id. | `string` | `null` | no |
 | organization_id | The GCP organization ID. Required when using folder_id to create custom roles at organization level. | `string` | `null` | no |
+| jit_enabled | Whether to create JIT PAM entitlements instead of regular IAM assignments. | `bool` | `false` | no |
+| jit_require_justification | Whether PAM activation requests must include justification. | `bool` | `false` | no |
+| jit_max_activation_duration_seconds | Maximum PAM activation duration, in seconds. | `number` | `3600` | no |
+| jit_approval_group_principals | List of group principals that can approve PAM activation requests. If empty, no approval workflow is configured. | `list(string)` | `[]` | no |
 
 ## Outputs
 
@@ -111,6 +116,7 @@ module "iam_assignment" {
 | custom_role_names | Map of custom role IDs to their names |
 | assigned_roles | List of all roles that have been assigned |
 | assigned_principals | List of all principals that have been assigned roles |
+| jit_reference_id | The created PAM entitlement ID when jit_enabled is true |
 
 ## Notes
 
@@ -120,6 +126,8 @@ module "iam_assignment" {
 - Custom role stages can be: `ALPHA`, `BETA`, `GA`, or `DEPRECATED`
 - Group principals should be in the format `group:groupname@domain.com`
 - Predefined roles should use the full role name (e.g., `roles/viewer`)
+- When `jit_enabled = true`, regular IAM member assignments are skipped and a PAM entitlement is created instead
+- If `jit_approval_group_principals` is empty, no approval workflow is configured (self-enabled activation)
 
 ## License
 

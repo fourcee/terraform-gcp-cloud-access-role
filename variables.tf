@@ -39,3 +39,27 @@ variable "organization_id" {
   type        = string
   default     = null
 }
+
+variable "jit_enabled" {
+  description = "Whether to create JIT PAM entitlements instead of regular IAM assignments."
+  type        = bool
+  default     = false
+}
+
+variable "jit_require_justification" {
+  description = "Whether PAM activation requests must include justification."
+  type        = bool
+  default     = false
+}
+
+variable "jit_max_activation_duration_seconds" {
+  description = "Maximum PAM activation duration, in seconds."
+  type        = number
+  default     = 3600
+}
+
+variable "jit_approval_group_principals" {
+  description = "List of group principals that can approve PAM activation requests. If empty, no approval workflow is configured."
+  type        = list(string)
+  default     = []
+}

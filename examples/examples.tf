@@ -164,3 +164,26 @@ module "admin_access" {
     "group:admins@example.com"
   ]
 }
+
+# Example 6: Project-level JIT PAM entitlement instead of direct IAM assignment
+module "project_jit_access" {
+  source = "github.com/fourcee/terraform-gcp-cloud-access-role"
+
+  project_id = "my-gcp-project-123"
+
+  predefined_roles = [
+    "roles/viewer",
+    "roles/storage.objectViewer"
+  ]
+
+  group_principals = [
+    "group:developers@example.com"
+  ]
+
+  jit_enabled                         = true
+  jit_require_justification           = true
+  jit_max_activation_duration_seconds = 7200
+  jit_approval_group_principals = [
+    "group:approvers@example.com"
+  ]
+}

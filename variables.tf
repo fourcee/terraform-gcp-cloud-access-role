@@ -63,3 +63,9 @@ variable "jit_approval_group_principals" {
   type        = list(string)
   default     = []
 }
+
+variable "jit_entitlement_prefix" {
+  description = "Prefix to use for the JIT entitlement ID"
+  type = string
+  default = null
+}

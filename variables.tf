@@ -1,12 +1,12 @@
 variable "predefined_roles" {
-  description = "List of GCP predefined roles with IAM conditions to assign to the group principals"
+  description = "List of GCP predefined roles with optional IAM conditions to assign to the group principals"
   type = list(object({
     role = string
-    condition = object({
+    condition = optional(object({
       title       = string
       description = string
       expression  = string
-    })
+    }))
   }))
   default     = []
 
@@ -14,27 +14,31 @@ variable "predefined_roles" {
     condition = alltrue([
       for role in var.predefined_roles :
       trim(role.role) != "" &&
-      trim(role.condition.title) != "" &&
-      trim(role.condition.description) != "" &&
-      trim(role.condition.expression) != ""
+      (
+        role.condition == null || (
+          trim(role.condition.title) != "" &&
+          trim(role.condition.description) != "" &&
+          trim(role.condition.expression) != ""
+        )
+      )
     ])
-    error_message = "Each predefined_roles entry must include non-empty role, condition.title, condition.description, and condition.expression."
+    error_message = "Each predefined_roles entry must include a non-empty role. If condition is provided, condition.title, condition.description, and condition.expression must be non-empty."
   }
 }
 
 variable "custom_roles" {
-  description = "List of custom GCP roles to create and assign, including IAM conditions for the assignment"
+  description = "List of custom GCP roles to create and assign, with optional IAM conditions for the assignment"
   type = list(object({
     role_id     = string
     title       = string
     description = string
     permissions = list(string)
     stage       = string
-    condition = object({
+    condition = optional(object({
       title       = string
       description = string
       expression  = string
-    })
+    }))
   }))
   default = []
 
@@ -46,11 +50,15 @@ variable "custom_roles" {
       trim(role.description) != "" &&
       length(role.permissions) > 0 &&
       trim(role.stage) != "" &&
-      trim(role.condition.title) != "" &&
-      trim(role.condition.description) != "" &&
-      trim(role.condition.expression) != ""
+      (
+        role.condition == null || (
+          trim(role.condition.title) != "" &&
+          trim(role.condition.description) != "" &&
+          trim(role.condition.expression) != ""
+        )
+      )
     ])
-    error_message = "Each custom_roles entry must include non-empty role metadata, at least one permission, and non-empty condition.title, condition.description, and condition.expression."
+    error_message = "Each custom_roles entry must include non-empty role metadata and at least one permission. If condition is provided, condition.title, condition.description, and condition.expression must be non-empty."
   }
 }
 

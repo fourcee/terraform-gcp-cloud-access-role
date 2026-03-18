@@ -7,13 +7,9 @@ module "project_iam_predefined" {
   project_id = "my-gcp-project-123"
 
   predefined_roles = [
+    # No condition specified: role is assigned unconditionally
     {
       role = "roles/viewer"
-      condition = {
-        title       = "ViewerCondition"
-        description = "Allow viewer access for authenticated requests"
-        expression  = "request.auth != null"
-      }
     },
     {
       role = "roles/storage.objectViewer"

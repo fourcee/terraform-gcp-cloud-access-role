@@ -126,7 +126,7 @@ resource "google_folder_iam_member" "custom_role" {
 resource "google_privileged_access_manager_entitlement" "jit" {
   count = var.jit_enabled && (local.is_project_level || local.is_folder_level) && length(var.group_principals) > 0 && length(local.jit_roles) > 0 ? 1 : 0
 
-  entitlement_id       = "cloud-access-jit-${substr(sha256(join(",", sort(concat([local.jit_parent], var.group_principals, local.jit_roles)))), 0, 24)}"
+  entitlement_id       = "${var.jit_entitlement_prefix}-${substr(sha256(join(",", sort(concat([local.jit_parent], var.group_principals, local.jit_roles)))), 0, 24)}"
   location             = "global"
   parent               = local.jit_parent
   max_request_duration = "${var.jit_max_activation_duration_seconds}s"

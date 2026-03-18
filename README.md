@@ -5,8 +5,8 @@ A Terraform module for deploying GCP IAM role assignments. This module allows yo
 ## Features
 
 - Create custom IAM roles with specified permissions
-- Assign predefined GCP roles to group principals
-- Assign custom roles to group principals
+- Assign predefined GCP roles to group principals with optional IAM conditions
+- Assign custom roles to group principals with optional IAM conditions
 - Support for both project-level and folder-level IAM assignments
 - Optional JIT PAM entitlements using `google_privileged_access_manager_entitlement`
 
@@ -23,8 +23,20 @@ module "iam_assignment" {
   project_id = "my-gcp-project"
 
   predefined_roles = [
-    "roles/viewer",
-    "roles/storage.objectViewer"
+    {
+      role = "roles/viewer"
+    },
+    {
+      role = "roles/storage.objectViewer"
+    },
+    {
+      role = "roles/logging.viewer"
+      condition = {
+        title       = "AuthenticatedOnly"
+        description = "Restrict logging viewing to authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
   ]
 
   custom_roles = [
@@ -38,6 +50,11 @@ module "iam_assignment" {
         "compute.instances.list"
       ]
       stage = "GA"
+      condition = {
+        title       = "ProdProjectOnly"
+        description = "Allow custom role only until a specific expiry date"
+        expression  = "request.time < timestamp('2030-01-01T00:00:00Z')"
+      }
     }
   ]
 
@@ -58,7 +75,14 @@ module "iam_assignment" {
   organization_id = "987654321098"
 
   predefined_roles = [
-    "roles/resourcemanager.folderViewer"
+    {
+      role = "roles/resourcemanager.folderViewer"
+      condition = {
+        title       = "FolderReadOnly"
+        description = "Read-only folder access for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
   ]
 
   custom_roles = [
@@ -71,6 +95,11 @@ module "iam_assignment" {
         "resourcemanager.folders.list"
       ]
       stage = "BETA"
+      condition = {
+        title       = "FolderScopedAccess"
+        description = "Scope folder custom role assignments with condition"
+        expression  = "request.time < timestamp('2030-01-01T00:00:00Z')"
+      }
     }
   ]
 
@@ -84,7 +113,7 @@ module "iam_assignment" {
 
 | Name | Version |
 |------|---------|
-| terraform | >= 1.0 |
+| terraform | >= 1.3 |
 | google | >= 4.0 |
 
 ## Providers
@@ -97,8 +126,8 @@ module "iam_assignment" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| predefined_roles | List of GCP predefined roles to assign to the group principals | `list(string)` | `[]` | no |
-| custom_roles | List of custom GCP roles to create and assign | <pre>list(object({<br>  role_id     = string<br>  title       = string<br>  description = string<br>  permissions = list(string)<br>  stage       = string<br>}))</pre> | `[]` | no |
+| predefined_roles | List of GCP predefined roles and optional IAM conditions to assign to the group principals | <pre>list(object({<br>  role = string<br>  condition = optional(object({<br>    title       = string<br>    description = string<br>    expression  = string<br>  }))<br>}))</pre> | `[]` | no |
+| custom_roles | List of custom GCP roles to create and assign | <pre>list(object({<br>  role_id     = string<br>  title       = string<br>  description = string<br>  permissions = list(string)<br>  stage       = string<br>  condition = optional(object({<br>    title       = string<br>    description = string<br>    expression  = string<br>  }))<br>}))</pre> | `[]` | no |
 | group_principals | List of GCP group principals (e.g., 'group:example@example.com') to assign roles to | `list(string)` | `[]` | no |
 | project_id | The GCP project ID to assign permissions at. Must provide either project_id or folder_id. | `string` | `null` | no |
 | folder_id | The GCP folder ID to assign permissions at. Must provide either project_id or folder_id. | `string` | `null` | no |
@@ -125,7 +154,8 @@ module "iam_assignment" {
 - Custom roles at the folder level are created at the organization level and then assigned to the folder
 - Custom role stages can be: `ALPHA`, `BETA`, `GA`, or `DEPRECATED`
 - Group principals should be in the format `group:groupname@domain.com`
-- Predefined roles should use the full role name (e.g., `roles/viewer`)
+- Predefined roles should use the full role name (e.g., `roles/viewer`) in the `role` field
+- IAM conditions are optional for predefined and custom role assignments; if provided, include `title`, `description`, and `expression`
 - When `jit_enabled = true`, regular IAM member assignments are skipped and a PAM entitlement is created instead
 - If `jit_approval_group_principals` is empty, no approval workflow is configured (self-enabled activation)
 

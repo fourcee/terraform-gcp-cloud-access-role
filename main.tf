@@ -4,16 +4,27 @@ locals {
   is_folder_level  = var.folder_id != null
 
   # Create a list of all roles (predefined + custom) for assignment
-  all_predefined_roles     = var.predefined_roles
-  all_custom_roles_project = [for role in var.custom_roles : "projects/${var.project_id}/roles/${role.role_id}" if local.is_project_level]
-  all_custom_roles_org     = [for role in var.custom_roles : "organizations/${var.organization_id}/roles/${role.role_id}" if local.is_folder_level]
+  all_predefined_roles = var.predefined_roles
+  all_custom_roles_project = [
+    for role in var.custom_roles : {
+      role      = "projects/${var.project_id}/roles/${role.role_id}"
+      condition = try(role.condition, null)
+    } if local.is_project_level
+  ]
+  all_custom_roles_org = [
+    for role in var.custom_roles : {
+      role      = "organizations/${var.organization_id}/roles/${role.role_id}"
+      condition = try(role.condition, null)
+    } if local.is_folder_level
+  ]
 
   # Create combinations of roles and principals for IAM bindings
   project_predefined_bindings = local.is_project_level ? flatten([
     for role in local.all_predefined_roles : [
       for principal in var.group_principals : {
-        role      = role
+        role      = role.role
         principal = principal
+        condition = try(role.condition, null)
       }
     ]
   ]) : []
@@ -21,8 +32,9 @@ locals {
   project_custom_bindings = local.is_project_level ? flatten([
     for role in local.all_custom_roles_project : [
       for principal in var.group_principals : {
-        role      = role
+        role      = role.role
         principal = principal
+        condition = role.condition
       }
     ]
   ]) : []
@@ -30,8 +42,9 @@ locals {
   folder_predefined_bindings = local.is_folder_level ? flatten([
     for role in local.all_predefined_roles : [
       for principal in var.group_principals : {
-        role      = role
+        role      = role.role
         principal = principal
+        condition = role.condition
       }
     ]
   ]) : []
@@ -39,8 +52,9 @@ locals {
   folder_custom_bindings = local.is_folder_level ? flatten([
     for role in local.all_custom_roles_org : [
       for principal in var.group_principals : {
-        role      = role
+        role      = role.role
         principal = principal
+        condition = role.condition
       }
     ]
   ]) : []
@@ -54,8 +68,8 @@ locals {
   jit_resource_type = local.is_project_level ? "cloudresourcemanager.googleapis.com/Project" : (
     local.is_folder_level ? "cloudresourcemanager.googleapis.com/Folder" : null
   )
-  jit_roles = local.is_project_level ? concat(local.all_predefined_roles, local.all_custom_roles_project) : (
-    local.is_folder_level ? concat(local.all_predefined_roles, local.all_custom_roles_org) : []
+  jit_roles = local.is_project_level ? concat([for role in local.all_predefined_roles : role.role], [for role in local.all_custom_roles_project : role.role]) : (
+    local.is_folder_level ? concat([for role in local.all_predefined_roles : role.role], [for role in local.all_custom_roles_org : role.role]) : []
   )
 }
 
@@ -85,40 +99,76 @@ resource "google_organization_iam_custom_role" "custom_role" {
 
 # Assign predefined roles at project level
 resource "google_project_iam_member" "predefined_role" {
-  for_each = local.is_project_level && !var.jit_enabled ? { for binding in local.project_predefined_bindings : "${binding.role}-${binding.principal}" => binding } : {}
+  for_each = local.is_project_level && !var.jit_enabled ? { for binding in local.project_predefined_bindings : "${binding.role}-${binding.principal}-${sha1(jsonencode(try(binding.condition, null)))}" => binding } : {}
 
   project = var.project_id
   role    = each.value.role
   member  = each.value.principal
+
+  dynamic "condition" {
+    for_each = each.value.condition == null ? [] : [each.value.condition]
+    content {
+      title       = condition.value.title
+      description = condition.value.description
+      expression  = condition.value.expression
+    }
+  }
 }
 
 # Assign custom roles at project level
 resource "google_project_iam_member" "custom_role" {
-  for_each = local.is_project_level && !var.jit_enabled ? { for binding in local.project_custom_bindings : "${binding.role}-${binding.principal}" => binding } : {}
+  for_each = local.is_project_level && !var.jit_enabled ? { for binding in local.project_custom_bindings : "${binding.role}-${binding.principal}-${sha1(jsonencode(try(binding.condition, null)))}" => binding } : {}
 
   project = var.project_id
   role    = each.value.role
   member  = each.value.principal
+
+  dynamic "condition" {
+    for_each = each.value.condition == null ? [] : [each.value.condition]
+    content {
+      title       = condition.value.title
+      description = condition.value.description
+      expression  = condition.value.expression
+    }
+  }
 
   depends_on = [google_project_iam_custom_role.custom_role]
 }
 
 # Assign predefined roles at folder level
 resource "google_folder_iam_member" "predefined_role" {
-  for_each = local.is_folder_level && !var.jit_enabled ? { for binding in local.folder_predefined_bindings : "${binding.role}-${binding.principal}" => binding } : {}
+  for_each = local.is_folder_level && !var.jit_enabled ? { for binding in local.folder_predefined_bindings : "${binding.role}-${binding.principal}-${sha1(jsonencode(try(binding.condition, null)))}" => binding } : {}
 
   folder = var.folder_id
   role   = each.value.role
   member = each.value.principal
+
+  dynamic "condition" {
+    for_each = each.value.condition == null ? [] : [each.value.condition]
+    content {
+      title       = condition.value.title
+      description = condition.value.description
+      expression  = condition.value.expression
+    }
+  }
 }
 
 # Assign custom roles at folder level
 resource "google_folder_iam_member" "custom_role" {
-  for_each = local.is_folder_level && !var.jit_enabled ? { for binding in local.folder_custom_bindings : "${binding.role}-${binding.principal}" => binding } : {}
+  for_each = local.is_folder_level && !var.jit_enabled ? { for binding in local.folder_custom_bindings : "${binding.role}-${binding.principal}-${sha1(jsonencode(try(binding.condition, null)))}" => binding } : {}
 
   folder = var.folder_id
   role   = each.value.role
   member = each.value.principal
+
+  dynamic "condition" {
+    for_each = each.value.condition == null ? [] : [each.value.condition]
+    content {
+      title       = condition.value.title
+      description = condition.value.description
+      expression  = condition.value.expression
+    }
+  }
 
   depends_on = [google_organization_iam_custom_role.custom_role]
 }

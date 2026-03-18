@@ -44,8 +44,8 @@ Shows how multiple group principals can be assigned multiple roles efficiently.
 1. Copy one of the examples to your Terraform configuration
 2. Update the values:
    - `project_id` or `folder_id` and `organization_id`
-   - `predefined_roles` with your desired GCP roles
-   - `custom_roles` with your custom role definitions
+   - `predefined_roles` with your desired GCP roles and IAM conditions
+   - `custom_roles` with your custom role definitions and IAM conditions
    - `group_principals` with your Google Group email addresses
 3. Run `terraform init` and `terraform plan` to review changes
 4. Apply with `terraform apply` when ready

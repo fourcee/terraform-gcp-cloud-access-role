@@ -7,9 +7,30 @@ module "project_iam_predefined" {
   project_id = "my-gcp-project-123"
 
   predefined_roles = [
-    "roles/viewer",
-    "roles/storage.objectViewer",
-    "roles/logging.viewer"
+    {
+      role = "roles/viewer"
+      condition = {
+        title       = "ViewerCondition"
+        description = "Allow viewer access for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    },
+    {
+      role = "roles/storage.objectViewer"
+      condition = {
+        title       = "StorageViewerCondition"
+        description = "Allow storage object viewing for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    },
+    {
+      role = "roles/logging.viewer"
+      condition = {
+        title       = "LoggingViewerCondition"
+        description = "Allow logging viewer access for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
   ]
 
   group_principals = [
@@ -25,7 +46,14 @@ module "project_iam_custom" {
   project_id = "my-gcp-project-123"
 
   predefined_roles = [
-    "roles/viewer"
+    {
+      role = "roles/viewer"
+      condition = {
+        title       = "ViewerCondition"
+        description = "Allow viewer access for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
   ]
 
   custom_roles = [
@@ -42,6 +70,11 @@ module "project_iam_custom" {
         "compute.instances.get"
       ]
       stage = "GA"
+      condition = {
+        title       = "AppRoleCondition"
+        description = "Allow custom app role for authenticated requests"
+        expression  = "request.auth != null"
+      }
     },
     {
       role_id     = "customDataRole"
@@ -54,6 +87,11 @@ module "project_iam_custom" {
         "bigquery.tables.getData"
       ]
       stage = "GA"
+      condition = {
+        title       = "DataRoleCondition"
+        description = "Allow custom data role for authenticated requests"
+        expression  = "request.auth != null"
+      }
     }
   ]
 
@@ -70,8 +108,22 @@ module "folder_iam_assignment" {
   organization_id = "987654321098"
 
   predefined_roles = [
-    "roles/resourcemanager.folderViewer",
-    "roles/viewer"
+    {
+      role = "roles/resourcemanager.folderViewer"
+      condition = {
+        title       = "FolderViewerCondition"
+        description = "Allow folder viewer role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    },
+    {
+      role = "roles/viewer"
+      condition = {
+        title       = "ViewerCondition"
+        description = "Allow viewer role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
   ]
 
   custom_roles = [
@@ -86,6 +138,11 @@ module "folder_iam_assignment" {
         "resourcemanager.projects.list"
       ]
       stage = "GA"
+      condition = {
+        title       = "FolderCustomCondition"
+        description = "Allow folder custom role for authenticated requests"
+        expression  = "request.auth != null"
+      }
     }
   ]
 
@@ -107,9 +164,30 @@ module "multi_principal_iam" {
   # WARNING: roles/owner grants full administrative access. Use sparingly and only for trusted admins.
   # Consider using more restricted roles like roles/editor or custom roles with specific permissions.
   predefined_roles = [
-    "roles/viewer",
-    "roles/editor",
-    "roles/owner"
+    {
+      role = "roles/viewer"
+      condition = {
+        title       = "ViewerCondition"
+        description = "Allow viewer role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    },
+    {
+      role = "roles/editor"
+      condition = {
+        title       = "EditorCondition"
+        description = "Allow editor role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    },
+    {
+      role = "roles/owner"
+      condition = {
+        title       = "OwnerCondition"
+        description = "Allow owner role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
   ]
 
   group_principals = [
@@ -126,7 +204,16 @@ module "viewer_access" {
 
   project_id = "my-gcp-project-123"
 
-  predefined_roles = ["roles/viewer"]
+  predefined_roles = [
+    {
+      role = "roles/viewer"
+      condition = {
+        title       = "ViewerCondition"
+        description = "Allow viewer role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
+  ]
 
   group_principals = [
     "group:viewers@example.com"
@@ -139,8 +226,22 @@ module "editor_access" {
   project_id = "my-gcp-project-123"
 
   predefined_roles = [
-    "roles/viewer",
-    "roles/editor"
+    {
+      role = "roles/viewer"
+      condition = {
+        title       = "ViewerCondition"
+        description = "Allow viewer role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    },
+    {
+      role = "roles/editor"
+      condition = {
+        title       = "EditorCondition"
+        description = "Allow editor role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
   ]
 
   group_principals = [
@@ -155,9 +256,30 @@ module "admin_access" {
 
   # WARNING: roles/owner grants full administrative access. Use sparingly.
   predefined_roles = [
-    "roles/viewer",
-    "roles/editor",
-    "roles/owner"
+    {
+      role = "roles/viewer"
+      condition = {
+        title       = "ViewerCondition"
+        description = "Allow viewer role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    },
+    {
+      role = "roles/editor"
+      condition = {
+        title       = "EditorCondition"
+        description = "Allow editor role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    },
+    {
+      role = "roles/owner"
+      condition = {
+        title       = "OwnerCondition"
+        description = "Allow owner role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
   ]
 
   group_principals = [
@@ -172,8 +294,22 @@ module "project_jit_access" {
   project_id = "my-gcp-project-123"
 
   predefined_roles = [
-    "roles/viewer",
-    "roles/storage.objectViewer"
+    {
+      role = "roles/viewer"
+      condition = {
+        title       = "ViewerCondition"
+        description = "Allow viewer role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    },
+    {
+      role = "roles/storage.objectViewer"
+      condition = {
+        title       = "StorageViewerCondition"
+        description = "Allow storage viewer role for authenticated requests"
+        expression  = "request.auth != null"
+      }
+    }
   ]
 
   group_principals = [

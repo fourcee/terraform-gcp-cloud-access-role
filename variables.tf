@@ -13,12 +13,12 @@ variable "predefined_roles" {
   validation {
     condition = alltrue([
       for role in var.predefined_roles :
-      trim(role.role) != "" &&
+      trimspace(role.role) != "" &&
       (
         role.condition == null || (
-          trim(role.condition.title) != "" &&
-          trim(role.condition.description) != "" &&
-          trim(role.condition.expression) != ""
+          trimspace(role.condition.title) != "" &&
+          trimspace(role.condition.description) != "" &&
+          trimspace(role.condition.expression) != ""
         )
       )
     ])
@@ -45,16 +45,16 @@ variable "custom_roles" {
   validation {
     condition = alltrue([
       for role in var.custom_roles :
-      trim(role.role_id) != "" &&
-      trim(role.title) != "" &&
-      trim(role.description) != "" &&
+      trimspace(role.role_id) != "" &&
+      trimspace(role.title) != "" &&
+      trimspace(role.description) != "" &&
       length(role.permissions) > 0 &&
-      trim(role.stage) != "" &&
+      trimspace(role.stage) != "" &&
       (
         role.condition == null || (
-          trim(role.condition.title) != "" &&
-          trim(role.condition.description) != "" &&
-          trim(role.condition.expression) != ""
+          trimspace(role.condition.title) != "" &&
+          trimspace(role.condition.description) != "" &&
+          trimspace(role.condition.expression) != ""
         )
       )
     ])

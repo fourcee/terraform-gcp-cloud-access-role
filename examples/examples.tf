@@ -33,6 +33,10 @@ module "project_iam_predefined" {
     "group:developers@example.com",
     "group:analysts@example.com"
   ]
+
+  user_principals = [
+    "user:alice@example.com"
+  ]
 }
 
 # Example 2: Project-level IAM assignment with custom roles
@@ -312,10 +316,17 @@ module "project_jit_access" {
     "group:developers@example.com"
   ]
 
+  user_principals = [
+    "user:alice@example.com"
+  ]
+
   jit_enabled                         = true
   jit_require_justification           = true
   jit_max_activation_duration_seconds = 7200
   jit_approval_group_principals = [
     "group:approvers@example.com"
+  ]
+  jit_approval_user_principals = [
+    "user:manager@example.com"
   ]
 }

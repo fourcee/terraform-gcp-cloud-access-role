@@ -6,7 +6,7 @@ This directory contains example configurations for using the GCP IAM Assignment 
 
 ### 1. Project-Level IAM with Predefined Roles (`examples.tf` - Example 1)
 
-Demonstrates assigning GCP predefined roles to group principals at the project level. This is the simplest use case.
+Demonstrates assigning GCP predefined roles to group and user principals at the project level. This is the simplest use case.
 
 **Use when:**
 - You only need to assign existing GCP roles
@@ -33,7 +33,7 @@ Demonstrates IAM assignments at the folder level with both predefined and custom
 
 ### 4. Multiple Principals with Roles (`examples.tf` - Example 4)
 
-Shows how multiple group principals can be assigned multiple roles efficiently.
+Shows how multiple principals (groups and users) can be assigned multiple roles efficiently.
 
 **Use when:**
 - Managing multiple teams with different access levels
@@ -47,6 +47,7 @@ Shows how multiple group principals can be assigned multiple roles efficiently.
    - `predefined_roles` with your desired GCP roles and IAM conditions
    - `custom_roles` with your custom role definitions and IAM conditions
    - `group_principals` with your Google Group email addresses
+   - `user_principals` with optional user email addresses
 3. Run `terraform init` and `terraform plan` to review changes
 4. Apply with `terraform apply` when ready
 
@@ -56,3 +57,4 @@ Shows how multiple group principals can be assigned multiple roles efficiently.
 - You may need to adjust this based on your module installation method
 - Ensure you have appropriate GCP permissions to create and assign roles
 - Group principals should be in the format `group:name@domain.com`
+- User principals should be in the format `user:name@domain.com`

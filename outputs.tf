@@ -26,7 +26,7 @@ output "assigned_roles" {
 
 output "assigned_principals" {
   description = "List of all principals that have been assigned roles"
-  value       = var.group_principals
+  value       = concat(var.group_principals, var.user_principals)
 }
 
 output "pam_entitlement_name" {

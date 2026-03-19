@@ -21,7 +21,7 @@ locals {
   # Create combinations of roles and principals for IAM bindings
   project_predefined_bindings = local.is_project_level ? flatten([
     for role in local.all_predefined_roles : [
-      for principal in var.group_principals : {
+      for principal in concat(var.group_principals, var.user_principals) : {
         role      = role.role
         principal = principal
         condition = try(role.condition, null)
@@ -31,7 +31,7 @@ locals {
 
   project_custom_bindings = local.is_project_level ? flatten([
     for role in local.all_custom_roles_project : [
-      for principal in var.group_principals : {
+      for principal in concat(var.group_principals, var.user_principals) : {
         role      = role.role
         principal = principal
         condition = role.condition
@@ -41,7 +41,7 @@ locals {
 
   folder_predefined_bindings = local.is_folder_level ? flatten([
     for role in local.all_predefined_roles : [
-      for principal in var.group_principals : {
+      for principal in concat(var.group_principals, var.user_principals) : {
         role      = role.role
         principal = principal
         condition = role.condition
@@ -51,7 +51,7 @@ locals {
 
   folder_custom_bindings = local.is_folder_level ? flatten([
     for role in local.all_custom_roles_org : [
-      for principal in var.group_principals : {
+      for principal in concat(var.group_principals, var.user_principals) : {
         role      = role.role
         principal = principal
         condition = role.condition
@@ -174,9 +174,9 @@ resource "google_folder_iam_member" "custom_role" {
 }
 
 resource "google_privileged_access_manager_entitlement" "jit" {
-  count = var.jit_enabled && (local.is_project_level || local.is_folder_level) && length(var.group_principals) > 0 && length(local.jit_roles) > 0 ? 1 : 0
+  count = var.jit_enabled && (local.is_project_level || local.is_folder_level) && length(concat(var.group_principals, var.user_principals)) > 0 && length(local.jit_roles) > 0 ? 1 : 0
 
-  entitlement_id       = "${var.jit_entitlement_prefix}-${substr(sha256(join(",", sort(concat([local.jit_parent], var.group_principals, local.jit_roles)))), 0, 24)}"
+  entitlement_id       = "${var.jit_entitlement_prefix}-${substr(sha256(join(",", sort(concat([local.jit_parent], var.group_principals, var.user_principals, local.jit_roles)))), 0, 24)}"
   location             = "global"
   parent               = local.jit_parent
   max_request_duration = "${var.jit_max_activation_duration_seconds}s"
@@ -189,7 +189,7 @@ resource "google_privileged_access_manager_entitlement" "jit" {
   }
 
   eligible_users {
-    principals = var.group_principals
+    principals = concat(var.group_principals, var.user_principals)
   }
 
   privileged_access {
@@ -206,13 +206,13 @@ resource "google_privileged_access_manager_entitlement" "jit" {
   }
 
   dynamic "approval_workflow" {
-    for_each = length(var.jit_approval_group_principals) > 0 ? [1] : []
+    for_each = length(concat(var.jit_approval_group_principals, var.jit_approval_user_principals)) > 0 ? [1] : []
     content {
       manual_approvals {
         steps {
           approvals_needed = 1
           approvers {
-            principals = var.jit_approval_group_principals
+            principals = concat(var.jit_approval_group_principals, var.jit_approval_user_principals)
           }
         }
       }

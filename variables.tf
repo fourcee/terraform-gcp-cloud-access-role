@@ -68,6 +68,12 @@ variable "group_principals" {
   default     = []
 }
 
+variable "user_principals" {
+  description = "List of GCP user principals (e.g., 'user:example@example.com') to assign roles to"
+  type        = list(string)
+  default     = []
+}
+
 variable "project_id" {
   description = "The GCP project ID to assign permissions at. Must provide either project_id or folder_id."
   type        = string
@@ -106,6 +112,12 @@ variable "jit_max_activation_duration_seconds" {
 
 variable "jit_approval_group_principals" {
   description = "List of group principals that can approve PAM activation requests. If empty, no approval workflow is configured."
+  type        = list(string)
+  default     = []
+}
+
+variable "jit_approval_user_principals" {
+  description = "List of user principals that can approve PAM activation requests. If empty, no approval workflow is configured."
   type        = list(string)
   default     = []
 }

@@ -1,12 +1,12 @@
 # terraform-gcp-cloud-access-role
 
-A Terraform module for deploying GCP IAM role assignments. This module allows you to create custom IAM roles and assign both predefined and custom roles to group principals at either the project or folder level, and optionally create PAM JIT entitlements instead of direct IAM assignments.
+A Terraform module for deploying GCP IAM role assignments. This module allows you to create custom IAM roles and assign both predefined and custom roles to group and user principals at either the project or folder level, and optionally create PAM JIT entitlements instead of direct IAM assignments.
 
 ## Features
 
 - Create custom IAM roles with specified permissions
-- Assign predefined GCP roles to group principals with optional IAM conditions
-- Assign custom roles to group principals with optional IAM conditions
+- Assign predefined GCP roles to group and user principals with optional IAM conditions
+- Assign custom roles to group and user principals with optional IAM conditions
 - Support for both project-level and folder-level IAM assignments
 - Optional JIT PAM entitlements using `google_privileged_access_manager_entitlement`
 
@@ -62,6 +62,10 @@ module "iam_assignment" {
     "group:developers@example.com",
     "group:ops@example.com"
   ]
+
+  user_principals = [
+    "user:alice@example.com"
+  ]
 }
 ```
 
@@ -106,6 +110,10 @@ module "iam_assignment" {
   group_principals = [
     "group:folder-admins@example.com"
   ]
+
+  user_principals = [
+    "user:security-admin@example.com"
+  ]
 }
 ```
 
@@ -129,6 +137,7 @@ module "iam_assignment" {
 | predefined_roles | List of GCP predefined roles and optional IAM conditions to assign to the group principals | <pre>list(object({<br>  role = string<br>  condition = optional(object({<br>    title       = string<br>    description = string<br>    expression  = string<br>  }))<br>}))</pre> | `[]` | no |
 | custom_roles | List of custom GCP roles to create and assign | <pre>list(object({<br>  role_id     = string<br>  title       = string<br>  description = string<br>  permissions = list(string)<br>  stage       = string<br>  condition = optional(object({<br>    title       = string<br>    description = string<br>    expression  = string<br>  }))<br>}))</pre> | `[]` | no |
 | group_principals | List of GCP group principals (e.g., 'group:example@example.com') to assign roles to | `list(string)` | `[]` | no |
+| user_principals | List of GCP user principals (e.g., 'user:example@example.com') to assign roles to | `list(string)` | `[]` | no |
 | project_id | The GCP project ID to assign permissions at. Must provide either project_id or folder_id. | `string` | `null` | no |
 | folder_id | The GCP folder ID to assign permissions at. Must provide either project_id or folder_id. | `string` | `null` | no |
 | organization_id | The GCP organization ID. Required when using folder_id to create custom roles at organization level. | `string` | `null` | no |
@@ -136,6 +145,7 @@ module "iam_assignment" {
 | jit_require_justification | Whether PAM activation requests must include justification. | `bool` | `false` | no |
 | jit_max_activation_duration_seconds | Maximum PAM activation duration, in seconds. | `number` | `3600` | no |
 | jit_approval_group_principals | List of group principals that can approve PAM activation requests. If empty, no approval workflow is configured. | `list(string)` | `[]` | no |
+| jit_approval_user_principals | List of user principals that can approve PAM activation requests. If empty, no approval workflow is configured. | `list(string)` | `[]` | no |
 
 ## Outputs
 
@@ -154,10 +164,11 @@ module "iam_assignment" {
 - Custom roles at the folder level are created at the organization level and then assigned to the folder
 - Custom role stages can be: `ALPHA`, `BETA`, `GA`, or `DEPRECATED`
 - Group principals should be in the format `group:groupname@domain.com`
+- User principals should be in the format `user:username@domain.com`
 - Predefined roles should use the full role name (e.g., `roles/viewer`) in the `role` field
 - IAM conditions are optional for predefined and custom role assignments; if provided, include `title`, `description`, and `expression`
 - When `jit_enabled = true`, regular IAM member assignments are skipped and a PAM entitlement is created instead
-- If `jit_approval_group_principals` is empty, no approval workflow is configured (self-enabled activation)
+- If both `jit_approval_group_principals` and `jit_approval_user_principals` are empty, no approval workflow is configured (self-enabled activation)
 
 ## License
 

@@ -321,7 +321,7 @@ module "project_jit_access" {
   ]
 
   jit_enabled                         = true
-  jit_require_justification           = true
+  jit_require_justification           = false # Uses requester_justification_config.not_mandatory
   jit_max_activation_duration_seconds = 7200
   jit_approval_group_principals = [
     "group:approvers@example.com"

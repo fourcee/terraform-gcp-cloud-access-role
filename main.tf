@@ -181,10 +181,15 @@ resource "google_privileged_access_manager_entitlement" "jit" {
   parent               = local.jit_parent
   max_request_duration = "${var.jit_max_activation_duration_seconds}s"
 
-  dynamic "requester_justification_config" {
-    for_each = var.jit_require_justification ? [1] : []
-    content {
-      unstructured {}
+  requester_justification_config {
+    dynamic "unstructured" {
+      for_each = var.jit_require_justification ? [1] : []
+      content {}
+    }
+
+    dynamic "not_mandatory" {
+      for_each = var.jit_require_justification ? [] : [1]
+      content {}
     }
   }
 

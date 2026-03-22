@@ -168,6 +168,7 @@ module "iam_assignment" {
 - Predefined roles should use the full role name (e.g., `roles/viewer`) in the `role` field
 - IAM conditions are optional for predefined and custom role assignments; if provided, include `title`, `description`, and `expression`
 - When `jit_enabled = true`, regular IAM member assignments are skipped and a PAM entitlement is created instead
+- The PAM `requester_justification_config` block is always configured; when `jit_require_justification = false`, the entitlement uses `not_mandatory`
 - If both `jit_approval_group_principals` and `jit_approval_user_principals` are empty, no approval workflow is configured (self-enabled activation)
 
 ## License
